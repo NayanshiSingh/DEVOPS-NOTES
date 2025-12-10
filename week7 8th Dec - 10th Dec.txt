@@ -1,0 +1,224 @@
+Kubernetes Basics & Networking — One-Page Summary
+1️⃣ Kubernetes Core Basics
+🔹 API Server
+
+Central control plane component
+
+Exposes REST APIs
+
+Backed by etcd (cluster state store)
+
+Everything in Kubernetes is an API call
+
+Entry point for kubectl, controllers, and nodes
+
+🔹 Controllers (Reconciliation Loop)
+
+Continuously ensure:
+Desired State = Actual State
+
+Watch API server for changes
+
+Take corrective action if mismatch exists
+
+Example Flow
+
+Scheduler assigns Pods → Nodes
+
+kubelet configures container runtime & networking
+
+🔹 Pods
+
+Smallest deployable unit
+
+One or more containers
+
+Containers in a Pod share:
+
+Same IP
+
+Same localhost
+
+Same ports
+
+Shared volumes
+
+🔹 Nodes
+
+Worker machines (VMs or bare metal)
+
+Run:
+
+kubelet
+
+kube-proxy
+
+Container runtime (containerd / CRI-O)
+
+2️⃣ Kubernetes Networking Model (Design Rules)
+
+Kubernetes enforces 3 strict rules:
+
+Pod ↔ Pod communication without NAT
+
+Node ↔ Pod communication without NAT
+
+Pod IP is the same inside & outside the Pod
+
+Therefore Kubernetes must support:
+
+Container-to-Container
+
+Pod-to-Pod
+
+Pod-to-Service
+
+Internet-to-Service
+
+3️⃣ Container-to-Container Networking (Inside a Pod)
+
+Containers share one network namespace
+
+Provided by Linux namespaces
+
+Shared:
+
+IP
+
+Ports
+
+Loopback
+
+Communication via localhost
+
+4️⃣ Pod-to-Pod Networking
+🔹 Same Node Communication
+
+Each Pod gets its own network namespace
+
+Connected using veth pairs
+
+Flow:
+
+Pod eth0 → veth → Linux bridge → veth → Pod eth0
+
+
+Bridge uses ARP to find destination Pod
+
+🔹 Different Node Communication
+
+Each node has a Pod CIDR
+
+Node1: 10.0.1.0/24
+
+Node2: 10.0.2.0/24
+
+Flow
+
+Pod → veth → bridge
+
+Bridge routes via node interface (eth0)
+
+Packet sent to destination node
+
+Destination routes to Pod via veth
+
+🔹 CNI (Who manages this?)
+
+CNI plugins manage Pod IP routing
+
+Examples
+
+AWS VPC CNI → Pods get real VPC IPs (no overlay)
+
+Calico / Flannel / Weave → Overlay or BGP-based networking
+
+5️⃣ Pod-to-Service Networking (ClusterIP)
+🔹 Why Services Exist
+
+Pod IPs are ephemeral
+
+Services provide:
+
+Stable virtual IP
+
+Internal load balancing
+
+🔹 Service Traffic Routing
+A️⃣ iptables Mode
+
+kube-proxy programs iptables rules
+
+Packets to Service IP:
+
+Random backend Pod selected
+
+DNAT → Pod IP
+
+Return traffic handled via conntrack (SNAT)
+
+B️⃣ IPVS Mode (Modern Default)
+
+Kernel-level load balancing
+
+Faster & scalable
+
+Uses dummy interfaces for Service IPs
+
+🔹 DNS (CoreDNS)
+
+Every Service gets a DNS name:
+
+service.namespace.svc.cluster.local
+
+
+CoreDNS runs as a Pod inside the cluster
+
+6️⃣ Internet-to-Service Networking
+🔹 Egress (Pod → Internet)
+
+Problem
+
+Internet Gateway doesn’t know Pod IPs
+
+Solution
+
+iptables SNAT:
+
+Pod IP → Node IP
+
+Cloud NAT:
+
+Node private IP → public IP
+
+🔹 Ingress (Internet → Pods)
+Option 1️⃣ Service Type = LoadBalancer (L4)
+
+Cloud LB created automatically
+
+Traffic flow:
+
+Internet → Cloud LB → NodePort → Pods
+
+
+Best for TCP/UDP services
+
+Option 2️⃣ Ingress Controller (L7)
+
+Examples
+
+NGINX
+
+AWS ALB Ingress
+
+Traefik
+
+Istio Gateway
+
+Features
+
+Host-based routing
+
+Path-based routing
+
+HTTP/HTTPS termination
