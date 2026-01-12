@@ -1,0 +1,199 @@
+
+Kubernetes (K8s) — One-Page Summary
+ What is Kubernetes?
+
+Kubernetes (K8s) is an open-source container orchestration platform.
+
+Think of it as the operating system of your data center, responsible for:
+
+Deploying containers
+
+Scaling applications
+
+Self-healing (restart, reschedule on failure)
+
+Networking containers
+
+Managing storage
+
+Rolling updates & rollbacks
+
+👉 It provides infrastructure automation, self-healing, and declarative state management.
+
+🔹 Kubernetes Architecture (High Level)
+
+Kubernetes uses a Master–Worker architecture:
+
+🧠 Control Plane (Master)
+
+The brain of the cluster
+
+Decides what should run and where
+
+💪 Data Plane (Worker Nodes)
+
+The muscles
+
+Actually run your applications (pods)
+
+🧠 Control Plane Components
+1️⃣ kube-apiserver (Front Door)
+
+Entry point for all kubectl & API requests
+
+Validates requests (authn/authz)
+
+Stores cluster state in etcd
+
+Stateless → can be horizontally scaled
+
+👉 Acts like a receptionist for the cluster.
+
+2️⃣ etcd (Source of Truth)
+
+Distributed key-value store
+
+Stores:
+
+Desired state
+
+Cluster metadata
+
+Pod & node info
+
+Secrets (encrypted)
+
+If etcd is lost → cluster is lost
+
+👉 Backups are critical.
+
+3️⃣ kube-scheduler
+
+Assigns pods to nodes
+
+Decides based on:
+
+CPU & memory
+
+Node health
+
+Taints & tolerations
+
+Affinity / anti-affinity
+
+Pod priority
+
+Chooses the best node for each pod
+
+4️⃣ kube-controller-manager
+
+Runs continuous control loops
+
+Ensures actual state = desired state
+
+Important controllers:
+
+Node controller
+
+Deployment controller
+
+ReplicaSet controller
+
+Job controller
+
+Volume controller
+
+👉 If something breaks, controllers fix it automatically.
+
+5️⃣ cloud-controller-manager (Cloud only)
+
+Integrates Kubernetes with AWS / Azure / GCP
+
+Manages:
+
+Load balancers
+
+Cloud routes
+
+Cloud disks
+
+VM health
+
+💪 Data Plane Components (Worker Nodes)
+1️⃣ kubelet (Node Agent)
+
+Runs on every worker node
+
+Talks to API server
+
+Responsibilities:
+
+Start & monitor pods
+
+Restart failed containers
+
+Pull images
+
+Mount volumes
+
+2️⃣ kube-proxy (Networking)
+
+Manages Service → Pod networking
+
+Uses:
+
+iptables or ipvs
+
+Load balances traffic across pods
+
+Enables east–west traffic inside cluster
+
+3️⃣ Container Runtime
+
+Kubernetes uses CRI to run containers.
+Common runtimes:
+
+containerd (most common)
+
+CRI-O
+
+Docker (runtime deprecated)
+
+Responsibilities:
+
+Pull images
+
+Run containers
+
+Manage namespaces & cgroups
+
+🔌 Additional Cluster Services
+🔹 CNI (Networking)
+
+Gives each pod a unique IP
+
+Handles routing & virtual interfaces
+
+Popular CNIs:
+
+Calico
+
+Cilium
+
+Flannel
+
+AWS VPC CNI
+
+🔹 CSI (Storage)
+
+Manages persistent storage
+
+Supports:
+
+EBS / Azure Disk / GCP PD
+
+NFS, Ceph
+
+Local volumes
+
+Enables dynamic volume provisioning
